@@ -127,6 +127,17 @@ function util.get_treesitter_hl(row, col)
   return matches
 end
 
+-- dim functions from peepsight
+function dim.dim_line(namespace, buffer, line_number)
+  pcall(vim.api.nvim_buf_set_extmark, buffer, namespace, line_number, 0, {
+    end_line = line_number + 1,
+    end_col = 0,
+    hl_group = "Comment", -- mvp
+    hl_eol = true,
+    priority = 10000,
+  })
+end
+
 local diagnostic_util = require("dim.diagnostic_util")
 
 -- UTIL FUNCTIONS END
@@ -137,7 +148,9 @@ dim.hig_unused = function()
     vim.api.nvim_buf_clear_namespace(0, dim.ns, 0, -1)
     for _, lsp_datum in ipairs(lsp_data) do
       if diagnostic_util.is_unused_symbol_diagnostic(lsp_datum) then
-        util.highlight_word(lsp_datum.lnum, lsp_datum.col, lsp_datum.end_col)
+
+        dim.dim_line(dim.ns, 0, lsp_datum.lnum) -- My addition
+        -- util.highlight_word(lsp_datum.lnum, lsp_datum.col, lsp_datum.end_col)
       end
     end
   end
